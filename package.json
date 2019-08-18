@@ -1,0 +1,23 @@
+{
+  "name": "website-scraper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^3.1.0",
+    "aws-sdk": "^2.501.0",
+    "chrome-aws-lambda": "^1.19.0",
+    "node-telegram-bot-api": "^0.30.0",
+    "puppeteer-core": "^1.19.0",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "puppeteer": "^1.19.0",
+    "serverless-plugin-chrome": "^1.0.0-55"
+  }
+}

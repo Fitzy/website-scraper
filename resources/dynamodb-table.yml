@@ -1,0 +1,47 @@
+Resources:
+  WebsiteConfig:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    Properties:
+      TableName: WebsiteConfig
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+  WebsiteCapture:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    Properties:
+      TableName: WebsiteCapture
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: websiteConfigId
+          AttributeType: S
+        - AttributeName: contentHash
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      GlobalSecondaryIndexes: 
+      - IndexName: myGSI
+        KeySchema: 
+        - AttributeName: websiteConfigId
+          KeyType: HASH
+        - AttributeName: contentHash
+          KeyType: RANGE
+        Projection: 
+          ProjectionType: ALL
+        ProvisionedThroughput: 
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+      # Set the capacity to auto-scale
+      # BillingMode: PAY_PER_REQUEST
