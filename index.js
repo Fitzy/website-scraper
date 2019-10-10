@@ -43,6 +43,11 @@ exports.handler = async (event, context) => {
 
     let page = await browser.newPage();
 
+    page.setViewport({
+      width: 1920,
+      height: 1080
+    });
+
     await page.setCacheEnabled(false);
 
     await page.goto(websiteConfig.url, {waitUntil: 'networkidle0'});
@@ -50,6 +55,24 @@ exports.handler = async (event, context) => {
     var elementId = websiteConfig.elementId;
 
     await page.waitForSelector(elementId, {visible: true});
+
+    // screenshots are taken and uploaded regardless of whether the page has changed
+    const screenshot = await page.screenshot({fullPage: true, type: "png"});
+
+    var s3 = new AWS.S3();
+
+    var screenshotFilename = uuidv1() + ".png";
+    var screenshotUrl = `https://${process.env.SCREENSHOT_UPLOADS_S3_BUCKET_NAME}.s3.eu-west-2.amazonaws.com/${screenshotFilename}`;
+
+    var s3Params = {
+      ACL: "public-read", 
+      Body: screenshot, 
+      Bucket: process.env.SCREENSHOT_UPLOADS_S3_BUCKET_NAME, 
+      Key: screenshotFilename,
+      ContentType: "image/png"
+    };
+
+    await s3.putObject(s3Params).promise();
 
     let capturedHtml = await page.evaluate((elementId) => {
       return document.querySelector(elementId).innerHTML;
@@ -77,7 +100,8 @@ exports.handler = async (event, context) => {
       sha256Hash: hashHex,
       name: websiteConfig.name,
       url: websiteConfig.url,
-      html: result
+      html: result,
+      screenshotUrl: screenshotUrl
     });
   }
 
@@ -107,7 +131,8 @@ exports.handler = async (event, context) => {
           websiteConfigId: content.websiteConfigId,
           contentHash: content.sha256Hash,
           content: content.html,
-          dateCreated: dateNow
+          dateCreated: dateNow,
+          screenshotUrl: content.screenshotUrl
         }
       };
 
@@ -115,7 +140,7 @@ exports.handler = async (event, context) => {
 
       const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {polling: false});
 
-      await bot.sendMessage(process.env.TELEGRAM_CHAT_ID, `Website update detected for ${content.name} - ${content.url}`);
+      await bot.sendMessage(process.env.TELEGRAM_CHAT_ID, `Website update detected for ${content.name}. Website - ${content.url}, Screenshot - ${content.screenshotUrl}`);
     }
   }
 

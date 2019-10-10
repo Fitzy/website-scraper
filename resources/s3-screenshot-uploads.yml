@@ -1,0 +1,26 @@
+Resources:
+  ScreenshotUploadsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ${file(secrets.yml):SCREENSHOT_UPLOADS_S3_BUCKET_NAME}
+      # Set the CORS policy
+      CorsConfiguration:
+        CorsRules:
+          -
+            AllowedOrigins:
+              - '*'
+            AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+              - HEAD
+            MaxAge: 3000
+
+# Print out the name of the bucket that is created
+Outputs:
+  ScreenshotUploadsBucketName:
+    Value:
+      Ref: ScreenshotUploadsBucket
