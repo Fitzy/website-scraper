@@ -35,9 +35,10 @@ The chat id will also be needed for the `TELEGRAM_CHAT_ID` environment variable,
 ```
 7. Multiple websites can be added using `WebsiteConfig` - but first check that a single website scrape works.
 8. Create `secrets.yml` - use `secrets-template.yml` as the template.
-9. Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` - see prerequisites section for details of how to get these.
-10. Set `SCREENSHOT_UPLOADS_S3_BUCKET_NAME` to be a unique s3 bucket name
-11. Run the Lambda function manually to check it's working as expected. In the future it be triggered based on the schedule provided to CloudWatch rules.
+9. Set `REGION` - this is the AWS region environment to deploy the project to
+10. Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` - see prerequisites section for details of how to get these.
+11. Set `SCREENSHOT_UPLOADS_S3_BUCKET_NAME` to be a unique s3 bucket name
+12. Run the Lambda function manually to check it's working as expected. In the future it be triggered based on the schedule provided to CloudWatch rules.
 
 ## Database Structure
 ### WebsiteConfig
