@@ -17,7 +17,7 @@ startBrowserAsync = async () => {
 
 exports.handler = async (event, context) => {
   AWS.config.update({
-    region: "eu-west-2"
+    region: process.env.REGION
   });
 
   var dynamodb = new AWS.DynamoDB.DocumentClient();
@@ -62,7 +62,7 @@ exports.handler = async (event, context) => {
     var s3 = new AWS.S3();
 
     var screenshotFilename = uuidv1() + ".png";
-    var screenshotUrl = `https://${process.env.SCREENSHOT_UPLOADS_S3_BUCKET_NAME}.s3.eu-west-2.amazonaws.com/${screenshotFilename}`;
+    var screenshotUrl = `https://${process.env.SCREENSHOT_UPLOADS_S3_BUCKET_NAME}.s3.${process.env.REGION}.amazonaws.com/${screenshotFilename}`;
 
     var s3Params = {
       ACL: "public-read", 

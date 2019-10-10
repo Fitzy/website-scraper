@@ -2,7 +2,7 @@ service: website-scraper
 
 provider:
     name: aws
-    region: eu-west-2
+    region: ${file(secrets.yml):REGION}
     runtime: nodejs8.10
     memorySize: 2048
     timeout: 60
