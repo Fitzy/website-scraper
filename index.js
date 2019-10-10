@@ -56,27 +56,9 @@ exports.handler = async (event, context) => {
 
     await page.waitForSelector(elementId, {visible: true});
 
-    // screenshots are taken and uploaded regardless of whether the page has changed
+    // screenshot needs to be taken, and appended to websiteContent object
+    // will only be uploaded to S3 if changes have been detected
     const screenshot = await page.screenshot({fullPage: true, type: "png"});
-
-    var s3 = new AWS.S3();
-
-    var screenshotFilename = uuidv1() + ".png";
-
-    // group screenshots of the same website in the same folder
-    var screenshotKey = `${websiteConfig.id}/${screenshotFilename}`;
-
-    var screenshotUrl = `https://${process.env.SCREENSHOT_UPLOADS_S3_BUCKET_NAME}.s3.${process.env.REGION}.amazonaws.com/${screenshotKey}`;
-
-    var s3Params = {
-      ACL: "public-read", 
-      Body: screenshot, 
-      Bucket: process.env.SCREENSHOT_UPLOADS_S3_BUCKET_NAME, 
-      Key: screenshotKey,
-      ContentType: "image/png"
-    };
-
-    await s3.putObject(s3Params).promise();
 
     let capturedHtml = await page.evaluate((elementId) => {
       return document.querySelector(elementId).innerHTML;
@@ -105,9 +87,11 @@ exports.handler = async (event, context) => {
       name: websiteConfig.name,
       url: websiteConfig.url,
       html: result,
-      screenshotUrl: screenshotUrl
+      screenshot: screenshot
     });
   }
+
+  var s3 = new AWS.S3();
 
   for (var i = 0; i < websiteContent.length; i++) {
     // Check to see if it exists
@@ -126,6 +110,22 @@ exports.handler = async (event, context) => {
     var results = await dynamodb.query(params).promise();
 
     if (results.Items.length == 0) {
+      var screenshotFilename = uuidv1() + ".png";
+  
+      // group screenshots of the same website in the same folder
+      var screenshotKey = `${content.websiteConfigId}/${screenshotFilename}`;
+      var screenshotUrl = `https://${process.env.SCREENSHOT_UPLOADS_S3_BUCKET_NAME}.s3.${process.env.REGION}.amazonaws.com/${screenshotKey}`;
+  
+      var s3Params = {
+        ACL: "public-read", 
+        Body: content.screenshot, 
+        Bucket: process.env.SCREENSHOT_UPLOADS_S3_BUCKET_NAME, 
+        Key: screenshotKey,
+        ContentType: "image/png"
+      };
+      
+      await s3.putObject(s3Params).promise();
+
       var dateNow = new Date().toISOString();
 
       var params = {
@@ -136,7 +136,7 @@ exports.handler = async (event, context) => {
           contentHash: content.sha256Hash,
           content: content.html,
           dateCreated: dateNow,
-          screenshotUrl: content.screenshotUrl
+          screenshotUrl: screenshotUrl
         }
       };
 
@@ -144,7 +144,7 @@ exports.handler = async (event, context) => {
 
       const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {polling: false});
 
-      await bot.sendMessage(process.env.TELEGRAM_CHAT_ID, `Website update detected for ${content.name}. Website - ${content.url}, Screenshot - ${content.screenshotUrl}`);
+      await bot.sendMessage(process.env.TELEGRAM_CHAT_ID, `Website update detected for ${content.name}. Website - ${content.url}, Screenshot - ${screenshotUrl}`);
     }
   }
 
