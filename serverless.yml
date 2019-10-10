@@ -27,7 +27,17 @@ provider:
             -
                 - "Fn::GetAtt": ["WebsiteCapture", "Arn" ]
                 - "index/*"
-
+        - Effect: Allow
+          Action:
+          - s3:PutObject
+          - s3:PutObjectAcl
+          Resource:
+          - Fn::Join:
+            - ""
+            -
+                - "arn:aws:s3:::"
+                - ${file(secrets.yml):SCREENSHOT_UPLOADS_S3_BUCKET_NAME}
+                - "/*"
 functions:
     scraper-function:
         handler: index.handler
@@ -53,3 +63,5 @@ custom:
 resources:
   # DynamoDB
   - ${file(resources/dynamodb-table.yml)}
+  # S3
+  - ${file(resources/s3-screenshot-uploads.yml)}
