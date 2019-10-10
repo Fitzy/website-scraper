@@ -62,13 +62,17 @@ exports.handler = async (event, context) => {
     var s3 = new AWS.S3();
 
     var screenshotFilename = uuidv1() + ".png";
-    var screenshotUrl = `https://${process.env.SCREENSHOT_UPLOADS_S3_BUCKET_NAME}.s3.${process.env.REGION}.amazonaws.com/${screenshotFilename}`;
+
+    // group screenshots of the same website in the same folder
+    var screenshotKey = `${websiteConfig.id}/${screenshotFilename}`;
+
+    var screenshotUrl = `https://${process.env.SCREENSHOT_UPLOADS_S3_BUCKET_NAME}.s3.${process.env.REGION}.amazonaws.com/${screenshotKey}`;
 
     var s3Params = {
       ACL: "public-read", 
       Body: screenshot, 
       Bucket: process.env.SCREENSHOT_UPLOADS_S3_BUCKET_NAME, 
-      Key: screenshotFilename,
+      Key: screenshotKey,
       ContentType: "image/png"
     };
 
