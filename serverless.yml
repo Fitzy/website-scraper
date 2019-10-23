@@ -3,7 +3,7 @@ service: website-scraper
 provider:
     name: aws
     region: ${file(secrets.yml):REGION}
-    runtime: nodejs8.10
+    runtime: nodejs10.x
     memorySize: 2048
     timeout: 60
     environment: ${file(secrets.yml)}
